@@ -1,0 +1,308 @@
+# Guía Paso a Paso para Crear la Aplicación "ConversorApp" (Versión Windows)
+
+Este documento explica cómo crear desde cero una aplicación Android simple que convierte grados Celsius a Fahrenheit, precedida por una pantalla de login. El estilo es directo y funcional, ideal para un proyecto de estudio.
+
+---
+
+### Paso 1: Crear la Estructura de Directorios
+
+Primero, abre un Símbolo del sistema (`cmd`) o PowerShell y crea las carpetas necesarias para nuestro proyecto.
+
+**Nota:** En Windows, se usa la barra invertida `\` para las rutas.
+
+```powershell
+# Comando para el Símbolo del sistema (cmd) o PowerShell
+mkdir ConversorApp\app\src\main\java\com\example\conversorapp\funciones
+mkdir ConversorApp\app\src\main\res\layout
+mkdir ConversorApp\app\src\main\res\values
+```
+
+---
+
+### Paso 2: Declarar las Pantallas en `AndroidManifest.xml`
+
+Este archivo es el "mapa" de la aplicación. Le dice a Android qué actividades existen y cuál se debe abrir primero.
+
+**Ruta:** `ConversorApp\app\src\main\AndroidManifest.xml`
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.conversorapp">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="ConversorApp"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+
+        <activity
+            android:name=".LoginActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ConversorActivity"
+            android:exported="false" />
+
+    </application>
+
+</manifest>
+```
+
+---
+
+### Paso 3: Crear los Diseños de Pantalla (Layouts)
+
+Estos son los archivos XML que definen cómo se ven las pantallas.
+
+#### a) Pantalla de Login
+
+**Ruta:** `ConversorApp\app\src\main\res\layout\activity_login.xml`
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="16dp"
+    tools:context=".LoginActivity">
+
+    <EditText
+        android:id="@+id/et_usuario"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Usuario (admin)"
+        android:inputType="text" />
+
+    <EditText
+        android:id="@+id/et_contrasena"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:hint="Contraseña (1234)"
+        android:inputType="textPassword" />
+
+    <Button
+        android:id="@+id/btn_ingresar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Ingresar" />
+
+    <TextView
+        android:id="@+id/tv_mensaje_error"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:textColor="#FF0000"
+        tools:text="Aquí va un mensaje de error" />
+
+</LinearLayout>
+```
+
+#### b) Pantalla del Conversor
+
+**Ruta:** `ConversorApp\app\src\main\res\layout\activity_conversor.xml`
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="16dp"
+    tools:context=".ConversorActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Conversor de Celsius a Fahrenheit"
+        android:textSize="20sp"
+        android:layout_marginBottom="24dp"/>
+
+    <EditText
+        android:id="@+id/et_celsius"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Ingresa los grados Celsius"
+        android:inputType="numberDecimal|numberSigned" />
+
+    <Button
+        android:id="@+id/btn_convertir"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Convertir" />
+
+    <TextView
+        android:id="@+id/tv_resultado"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        tools:text="Resultado: 32.0 °F" />
+
+</LinearLayout>
+```
+
+---
+
+### Paso 4: Separar la Lógica de Cálculo
+
+Creamos un archivo Kotlin en un paquete separado para manejar la conversión. Esto demuestra una buena organización del código.
+
+**Ruta:** `ConversorApp\app\src\main\java\com\example\conversorapp\funciones\Conversiones.kt`
+
+```kotlin
+package com.example.conversorapp.funciones
+
+// Este archivo contiene la lógica de negocio para las conversiones.
+
+/**
+ * Convierte un valor de grados Celsius a Fahrenheit.
+ * Se usa un 'if' para una validación simple, como se solicitó.
+ *
+ * @param celsiusStr El valor en grados Celsius como un String.
+ * @return El valor convertido a Fahrenheit como Double.
+ * @throws NumberFormatException si el String no es un número válido.
+ * @throws IllegalArgumentException si el String está en blanco.
+ */
+fun convertirCelsiusAFahrenheit(celsiusStr: String): Double {
+    // Se comprueba con un 'if' que el campo no esté vacío.
+    if (celsiusStr.isBlank()) {
+        throw IllegalArgumentException("El campo de Celsius no puede estar vacío.")
+    }
+
+    val celsius = celsiusStr.toDouble()
+
+    // Fórmula de conversión
+    return (celsius * 9 / 5) + 32
+}
+```
+
+---
+
+### Paso 5: Escribir el Código de la Pantalla de Login
+
+Este es el "controlador" de la pantalla de login. Conecta el diseño con la lógica.
+
+**Ruta:** `ConversorApp\app\src\main\java\com\example\conversorapp\LoginActivity.kt`
+
+```kotlin
+package com.example.conversorapp
+
+import android.content.Intent
+import android.os.Bundle
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+
+class LoginActivity : AppCompatActivity() {
+
+    private lateinit var etUsuario: EditText
+    private lateinit var etContrasena: EditText
+    private lateinit var btnIngresar: Button
+    private lateinit var tvMensajeError: TextView
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_login)
+
+        etUsuario = findViewById(R.id.et_usuario)
+        etContrasena = findViewById(R.id.et_contrasena)
+        btnIngresar = findViewById(R.id.btn_ingresar)
+        tvMensajeError = findViewById(R.id.tv_mensaje_error)
+
+        btnIngresar.setOnClickListener {
+            val usuario = etUsuario.text.toString()
+            val contrasena = etContrasena.text.toString()
+
+            val usuarioValido = "admin"
+            val contrasenaValida = "1234"
+
+            if (usuario == usuarioValido && contrasena == contrasenaValida) {
+                tvMensajeError.text = ""
+                val intent = Intent(this, ConversorActivity::class.java)
+                startActivity(intent)
+                finish()
+            } else {
+                tvMensajeError.text = "Usuario o contraseña incorrectos."
+            }
+        }
+    }
+}
+```
+
+---
+
+### Paso 6: Escribir el Código del Conversor (con Manejo de Errores)
+
+Este es el controlador principal. Incluye el **manejo de excepciones**, que es una parte crucial.
+
+**Ruta:** `ConversorApp\app\src\main\java\com\example\conversorapp\ConversorActivity.kt`
+
+```kotlin
+package com.example.conversorapp
+
+import android.os.Bundle
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import com.example.conversorapp.funciones.convertirCelsiusAFahrenheit
+
+class ConversorActivity : AppCompatActivity() {
+
+    private lateinit var etCelsius: EditText
+    private lateinit var btnConvertir: Button
+    private lateinit var tvResultado: TextView
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_conversor)
+
+        etCelsius = findViewById(R.id.et_celsius)
+        btnConvertir = findViewById(R.id.btn_convertir)
+        tvResultado = findViewById(R.id.tv_resultado)
+
+        btnConvertir.setOnClickListener {
+            val celsiusInput = etCelsius.text.toString()
+
+            // ---- INICIO: MANEJO DE EXCEPCIONES (try-catch) ----
+            try {
+                // 1. Intenta ejecutar el código que puede fallar.
+                val resultadoFahrenheit = convertirCelsiusAFahrenheit(celsiusInput)
+                val resultadoFormateado = String.format("%.2f", resultadoFahrenheit)
+                tvResultado.text = "Resultado: $resultadoFormateado °F"
+
+            } catch (e: NumberFormatException) {
+                // 2. Se ejecuta si el usuario ingresa texto (ej: "hola").
+                tvResultado.text = "Error: Ingresa un número válido."
+
+            } catch (e: IllegalArgumentException) {
+                // 3. Se ejecuta si el campo está vacío (nuestra validación con 'if').
+                tvResultado.text = "Error: El campo no puede estar vacío."
+            }
+            // ---- FIN: MANEJO DE EXCEPCIONES ----
+        }
+    }
+}
+```
+
+---
+
+Con estos 6 pasos, tienes una aplicación completamente funcional que cumple con todos los requisitos solicitados. Puedes seguir esta guía para crear los archivos en tu máquina Windows y luego abrir el proyecto `ConversorApp` con Android Studio.
